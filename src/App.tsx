@@ -1,16 +1,22 @@
 import { MemoryWorld } from './components/experience/MemoryWorld'
+import { DepthLayer } from './components/ui/DepthLayer'
 import { HUD } from './components/ui/HUD'
 import { useScrollProgress } from './hooks/useScrollProgress'
 import { useReducedMotion } from './hooks/useReducedMotion'
+import { WORLD_SCROLL_VH } from './data/scenes'
 
 export default function App() {
-  const { progress, velocity } = useScrollProgress()
+  useScrollProgress()
   const reduced = useReducedMotion()
 
   return (
     <>
-      <MemoryWorld progress={progress} velocity={velocity}  reduced={reduced} />
-      <HUD progress={progress} />
+      <MemoryWorld reduced={reduced} />
+      {/* The scrollbar is the camera rail. This div is the only thing that gives it length. */}
+      <div className="scroll-rail" style={{ height: `${WORLD_SCROLL_VH}vh` }} aria-hidden="true" />
+      <DepthLayer />
+      <div className="vignette" aria-hidden="true" />
+      <HUD />
     </>
   )
 }
