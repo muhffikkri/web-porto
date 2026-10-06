@@ -13,8 +13,6 @@ const CONTENT = [HeroScene, AboutScene, SkillsScene, ProjectsScene, ExperienceSc
 
 /** CSS pixels of panel travel per world unit. */
 const PX_PER_UNIT = 14
-/** World units at which a panel has faded out completely. */
-const FADE = 20
 /** Falloff exponent. Higher keeps far panels fainter for longer. */
 const FALLOFF = 3
 /** Once a panel is this many units past the camera it has left the viewport. */
@@ -31,7 +29,7 @@ export function DepthLayer() {
       {SCENES.map((scene, i) => {
         const Content = CONTENT[i]
         return (
-          <DepthPanel key={scene.id} z={scene.z} id={scene.id} gated={i === 0}>
+          <DepthPanel key={scene.id} z={scene.z} id={scene.id} span={scene.span} gated={i === 0}>
             <Content />
           </DepthPanel>
         )
@@ -43,11 +41,14 @@ export function DepthLayer() {
 export function DepthPanel({
   z,
   id,
+  span = 20,
   gated,
   children,
 }: {
   z: number
   id: string
+  /** Distance ahead at which this panel has faded out. */
+  span?: number
   /** Fades in with the opening sequence instead of on distance alone. */
   gated?: boolean
   children: ReactNode
@@ -77,14 +78,14 @@ export function DepthPanel({
 
       // Cubic falloff: the next scene reads as a hint through the current one,
       // never competing with it.
-      const fade = d > 0 ? 1 : Math.max(0, 1 + d / FADE) ** FALLOFF
+      const fade = d > 0 ? 1 : Math.max(0, 1 + d / span) ** FALLOFF
       content.style.opacity = String(gated ? fade * intro.reveal : fade)
       const blur = -d > 4 ? Math.min(5, (-d - 4) / 11) : 0
       content.style.filter = blur ? `blur(${blur}px)` : ''
     }
     raf = requestAnimationFrame(place)
     return () => cancelAnimationFrame(raf)
-  }, [z, gated])
+  }, [z, span, gated])
 
   // transform on the section (so panels depth-sort), opacity and filter on the
   // inner wrapper. Putting either on the section would flatten its preserve-3d

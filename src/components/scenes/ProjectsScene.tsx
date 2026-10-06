@@ -1,36 +1,29 @@
-import { SceneTitle } from '../ui/SceneTitle'
 import { PROJECTS } from '../../data/projects'
+import { SceneTitle } from '../ui/SceneTitle'
+import { ProjectCard } from '../ui/ProjectCard'
 
 export function ProjectsScene() {
   return (
-    <section className="panel" aria-labelledby="projects-heading">
-      <SceneTitle title="PROJECTS" index="03" id="projects-heading" />
-      <ol className="project-list">
+    <section className="panel panel--carousel" aria-label="Projects">
+      {/* The heading sits above the arc. Inside the centred card it would
+          land on top of the readable project. */}
+      <div className="carousel-head">
+        <SceneTitle title="PROJECTS" index="03" id="projects-heading" />
+      </div>
+
+      {/* The cards are the visible carousel. This list is what a screen reader
+          and a crawler get, so every project is reachable without the arc. */}
+      <ol className="sr-only">
         {PROJECTS.map((p, i) => (
           <li key={p.id}>
-            <span className="project-index">{String(i + 1).padStart(2, '0')}</span>
-            <h3 className="project-title">{p.title}</h3>
-            <p className="project-desc">{p.description}</p>
-            <ul className="project-tags">
-              {p.tags.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ul>
-            <p className="project-links">
-              {p.github && (
-                <a href={p.github} target="_blank" rel="noreferrer noopener">
-                  GitHub
-                </a>
-              )}
-              {p.demo && (
-                <a href={p.demo} target="_blank" rel="noreferrer noopener">
-                  Live Demo
-                </a>
-              )}
-            </p>
+            {i + 1}. {p.title}. {p.description} {p.tags.join(', ')}.
           </li>
         ))}
       </ol>
+
+      {PROJECTS.map((p, i) => (
+        <ProjectCard key={p.id} project={p} index={i} count={PROJECTS.length} />
+      ))}
     </section>
   )
 }

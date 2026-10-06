@@ -342,16 +342,33 @@ ul {
   color: var(--ink-2);
 }
 
-.project-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  text-align: left;
+/* ---- project carousel ---- */
+
+/* The heading sits above the arc, out of the cards' way. */
+.carousel-head {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 2;
+  padding-top: 14vh;
+  pointer-events: none;
 }
 
-.project-list li {
-  padding-top: 1rem;
-  border-top: 1px solid var(--rule);
+.project-card {
+  position: absolute;
+  top: 54%;
+  left: 50%;
+  width: min(30vw, 26rem);
+  margin-top: -1.5rem;
+  /* Anchored at its own centre so the arc opens around the middle card. */
+  translate: -50% 0;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+}
+
+.project-entry {
+  padding: 1.4rem 0 0;
+  border-top: 1px solid var(--accent-line);
+  text-align: left;
 }
 
 .project-index {
@@ -363,9 +380,9 @@ ul {
 
 .project-title {
   margin-top: 0.3rem;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 1.15rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 .project-desc {
