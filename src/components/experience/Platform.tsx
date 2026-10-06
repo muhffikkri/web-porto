@@ -19,11 +19,10 @@ export function Platform({ z, width = 15, depth = 11 }: Props) {
   const mesh = useRef<Mesh>(null)
 
   useFrame(() => {
-    const d = Math.abs(z - cameraZ())
-    if (mat.current) {
-      mat.current.opacity = Math.max(0, Math.min(1, (d - 24) / 30)) * 0.8
-    }
-    if (mesh.current) mesh.current.visible = d < 150
+    const d = z - cameraZ()
+    // Gone by the time the camera arrives; only the platform ahead reads.
+    if (mat.current) mat.current.opacity = Math.max(0, Math.min(1, -d / 40)) * 0.7
+    if (mesh.current) mesh.current.visible = d < 0 && -d < 130
   })
 
   return (

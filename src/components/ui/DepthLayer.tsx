@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { SCENES } from '../../data/scenes'
 import { distanceTo } from '../../lib/scroll'
+import { intro } from '../../lib/intro'
 import { HeroScene } from '../scenes/HeroScene'
 import { AboutScene } from '../scenes/AboutScene'
 import { SkillsScene } from '../scenes/SkillsScene'
@@ -13,9 +14,11 @@ const CONTENT = [HeroScene, AboutScene, SkillsScene, ProjectsScene, ExperienceSc
 /** CSS pixels of panel travel per world unit. */
 const PX_PER_UNIT = 14
 /** World units at which a panel has faded out completely. */
-const FADE = 75
-/** World units behind the camera after which a panel stops painting. */
-const CULL_BEHIND = 18
+const FADE = 20
+/** Falloff exponent. Higher keeps far panels fainter for longer. */
+const FALLOFF = 3
+/** Once a panel is this many units past the camera it has left the viewport. */
+const PASSED = 26
 
 /**
  * All portfolio text lives in one DOM layer under a single CSS perspective,
@@ -28,7 +31,7 @@ export function DepthLayer() {
       {SCENES.map((scene, i) => {
         const Content = CONTENT[i]
         return (
-          <DepthPanel key={scene.id} z={scene.z} id={scene.id}>
+          <DepthPanel key={scene.id} z={scene.z} id={scene.id} gated={i === 0}>
             <Content />
           </DepthPanel>
         )
@@ -40,40 +43,57 @@ export function DepthLayer() {
 export function DepthPanel({
   z,
   id,
+  gated,
   children,
 }: {
   z: number
   id: string
+  /** Fades in with the opening sequence instead of on distance alone. */
+  gated?: boolean
   children: ReactNode
 }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const panel = useRef<HTMLElement>(null)
+  const body = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     let raf = 0
     const place = () => {
       raf = requestAnimationFrame(place)
-      const el = ref.current
-      if (!el) return
+      const el = panel.current
+      const content = body.current
+      if (!el || !content) return
 
       const d = distanceTo(z)
-      if (d > CULL_BEHIND) {
+      if (d > PASSED) {
+        // Already travelled through the viewport.
         el.style.visibility = 'hidden'
         return
       }
       el.style.visibility = 'visible'
-      const ad = Math.abs(d)
-      el.style.transform = `translate3d(0, ${(d * PX_PER_UNIT) / 6}px, ${-ad * PX_PER_UNIT}px)`
-      el.style.opacity = String(Math.max(0, Math.min(1, 1 - ad / FADE)))
-      el.style.filter = ad > 4 ? `blur(${Math.min(5, (ad - 4) / 11)}px)` : ''
+
+      // Signed translateZ: a panel ahead is pushed away, a panel the camera
+      // has passed is pulled toward the viewer and grows past the screen.
+      el.style.transform = `translate3d(0, ${(d * PX_PER_UNIT) / 6}px, ${d * PX_PER_UNIT}px)`
+
+      // Cubic falloff: the next scene reads as a hint through the current one,
+      // never competing with it.
+      const fade = d > 0 ? 1 : Math.max(0, 1 + d / FADE) ** FALLOFF
+      content.style.opacity = String(gated ? fade * intro.reveal : fade)
+      const blur = -d > 4 ? Math.min(5, (-d - 4) / 11) : 0
+      content.style.filter = blur ? `blur(${blur}px)` : ''
     }
     raf = requestAnimationFrame(place)
     return () => cancelAnimationFrame(raf)
-  }, [z])
+  }, [z, gated])
 
-  // No inline style: React must not fight the rAF loop that owns visibility.
+  // transform on the section (so panels depth-sort), opacity and filter on the
+  // inner wrapper. Putting either on the section would flatten its preserve-3d
+  // and panels would paint in DOM order instead of by distance.
   return (
-    <section id={id} ref={ref} className="depth-panel">
-      {children}
+    <section id={id} ref={panel} className="depth-panel">
+      <div ref={body} className="depth-panel-body">
+        {children}
+      </div>
     </section>
   )
 }

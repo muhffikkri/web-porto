@@ -20,6 +20,7 @@ export function MemoryWorld({ reduced }: { reduced: boolean }) {
       <Atmosphere />
       <FloatingFragments reduced={reduced} />
       <ParticleField reduced={reduced} />
+      {/* No platform at the hero: the camera already starts standing on it. */}
       {SCENES.slice(1).map((s) => (
         <Platform key={s.id} z={s.z} />
       ))}
