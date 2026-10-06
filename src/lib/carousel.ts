@@ -9,8 +9,8 @@ import { cameraZ } from './scroll.ts'
  * carousel reversible and testable without a renderer.
  */
 
-/** Depth of corridor one project occupies. */
-export const SLICE = 13
+/** Camera travel between one project centring and the next. */
+export const SLICE = 6
 
 /** Lateral gap between neighbours on the arc, as a percentage of viewport width. */
 export const SPACING = 27
@@ -24,30 +24,17 @@ export const REACH = 2.4
 export const SCENE_Z = SCENES[3].z
 
 /**
- * Z of the first project: the one the camera meets on entering the scene.
- * Later projects sit deeper down the corridor.
- */
-/**
- * Z of the first project: the one the camera meets on entering the scene.
- * Later projects sit deeper down the corridor.
- *
- * The arc is centred on the scene rather than starting at it, so the middle
- * project reaches full opacity when the camera is at the scene's z. Starting
- * the arc at the scene would leave every project but the last permanently
- * half-faded.
- */
-export function entryZ(count: number) {
-  return SCENE_Z + ((count - 1) * SLICE) / 2
-}
-
-/**
- * Which project is centred, as a fraction. 0 at the scene entrance, count-1
- * at its far end. Clamped, so the first and last projects hold centre at the
- * ends of the range instead of running off.
+ * Which project is centred, as a fraction. 0 when the scene is centred, so
+ * the section's resting position (nav, hash link, reduced motion) is always
+ * the first project and it gets the fully lit moment; count-1 at the far end.
+ * The slice is sized so all the projects stay inside the panel's readable
+ * band (NEAR each side of the centre) instead of centring in the fade.
+ * Clamped, so the first and last projects hold centre at the ends of the
+ * range instead of running off.
  */
 export function focus(count: number, z = cameraZ()) {
   if (count < 2) return 0
-  const raw = (entryZ(count) - z) / SLICE
+  const raw = (SCENE_Z - z) / SLICE
   return Math.max(0, Math.min(count - 1, raw))
 }
 

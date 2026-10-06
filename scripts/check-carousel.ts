@@ -4,23 +4,28 @@ import {
   SCENE_Z,
   SLICE,
   TILT,
-  entryZ,
   focus,
   slot,
 } from '../src/lib/carousel.ts'
+import { NEAR } from '../src/lib/depth.ts'
 
-const N = 4
-const z0 = entryZ(N)
+const N = 3
+const z0 = SCENE_Z
 
-// The arc is centred on the scene: the middle project is centred at the
-// scene's own z, and each end sits symmetrically about it.
-assert.equal(focus(N, SCENE_Z), (N - 1) / 2, 'arc is not centred on the scene')
-const lastZ = entryZ(N) - (N - 1) * SLICE
-assert.equal(entryZ(N) + lastZ, SCENE_Z * 2, 'arc ends are not symmetric about the scene')
+// The first project is the one the scene's resting position shows, so the
+// section opens on the card the reader is supposed to see first.
+assert.equal(focus(N, SCENE_Z), 0, 'first project is not centred at the scene')
+
+// The whole arc must fit inside the panel's readable band (NEAR each side of
+// the scene centre), or the last project centres while the panel is fading.
+assert.ok(
+  z0 - (N - 1) * SLICE >= SCENE_Z - NEAR,
+  'the last project centres past the readable band',
+)
 
 // The camera meets project 1 first, and project N last.
 assert.equal(focus(N, z0), 0, 'first project is not centred at the arc entry')
-assert.ok(Math.abs(focus(N, z0 - SLICE * (N - 1))) - (N - 1) < 1e-9, 'last project centred at the end')
+assert.equal(focus(N, z0 - SLICE * (N - 1)), N - 1, 'last project centred at the end')
 
 // Clamped at both ends so the carousel holds rather than running off.
 assert.equal(focus(N, z0 + 500), 0, 'clamps before the entrance')
@@ -80,10 +85,11 @@ assert.equal(left.tilt, -right.tilt)
 assert.equal(left.x, -right.x)
 
 // Only nearby cards paint; the rest would overlap the readable one.
-// On entry only the first card and its neighbour are within reach.
+// On entry only the first card and its neighbour are lit: the far card is
+// within reach but dimmed to nothing.
 assert.equal(slot(0, N, z0).visible, true, 'the first card is not shown on entry')
 assert.equal(slot(1, N, z0).visible, true, 'the next card should be in reach')
-assert.equal(slot(N - 1, N, z0).visible, false, 'the far end of the arc is drawn on entry')
+assert.equal(slot(N - 1, N, z0).opacity, 0, 'the far card is lit on entry')
 for (let i = 0; i < N; i++) {
   const s = slot(i, N, z0 - SLICE)
   assert.equal(s.visible, Math.abs(s.offset) <= REACH, `visibility wrong for ${i}`)
@@ -98,9 +104,5 @@ for (let z = z0 + 60; z >= z0 - SLICE * (N + 3); z -= 3) {
     assert.ok(s.blur >= 0 && s.blur <= 4, `blur out of range: ${s.blur}`)
   }
 }
-
-// The scene must be long enough to hold the carousel.
-assert.ok(entryZ(N) - SCENE_Z > 0, 'carousel runs backwards into the previous scene')
-assert.equal(entryZ(1), SCENE_Z)
 
 console.log('carousel ok')
