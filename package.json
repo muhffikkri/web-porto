@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/muhffikkri/web-porto#readme",
   "devDependencies": {
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2"
   },
   "dependencies": {
