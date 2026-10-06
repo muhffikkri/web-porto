@@ -416,6 +416,49 @@ ul {
   color: var(--accent);
 }
 
+/* ---- experience milestones ---- */
+
+.milestone {
+  position: absolute;
+  width: min(26vw, 20rem);
+  padding-left: 1.1rem;
+  border-left: 1px solid var(--accent-line);
+  text-align: left;
+  list-style: none;
+  translate: -50% -50%;
+  will-change: transform, opacity, filter;
+}
+
+.milestone-period {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+
+.milestone-role {
+  margin-top: 0.3rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.milestone-org {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+.milestone-detail {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+/* ---- contact ---- */
+
 .contact-headline {
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 4vw, 2.6rem);
@@ -437,6 +480,17 @@ ul {
   font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+.contact-links a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+
+.contact-links a:hover {
+  border-bottom-color: var(--accent-line);
 }
 
 /* ---- HUD ---- */

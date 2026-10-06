@@ -17,7 +17,9 @@ export const SCENES: SceneConfig[] = [
   { id: 'skills', title: '02 / SKILLS', label: 'SKILLS', z: -70, span: 22 },
   { id: 'projects', title: '03 / PROJECTS', label: 'PROJECTS', z: -120, span: 26 },
   { id: 'experience', title: '04 / EXPERIENCE', label: 'EXPERIENCE', z: -180, span: 20 },
-  { id: 'contact', title: '05 / CONTACT', label: 'CONTACT', z: -250, span: 30 },
+  // Contact is centred at the very end of the scroll, so it needs a wide span
+  // to be readable on approach. Nothing follows it to compete with.
+  { id: 'contact', title: '05 / CONTACT', label: 'CONTACT', z: -250, span: 70 },
 ]
 
 /** Where the camera sits at scroll 0, ahead of the first scene. */
