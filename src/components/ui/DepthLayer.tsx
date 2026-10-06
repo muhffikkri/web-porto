@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { SCENES } from '../../data/scenes'
 import { distanceTo, scroll } from '../../lib/scroll'
-import { NEAR } from '../../lib/depth'
+import { NEAR, PASS_FADE } from '../../lib/depth'
 import { intro } from '../../lib/intro'
 
 /** Falloff exponent. Higher keeps far panels fainter for longer. */
@@ -23,9 +23,17 @@ const PX_PER_UNIT = 14
  * Within NEAR the scene the camera is travelling toward is fully legible, and
  * only past that does it fall off. A single distance curve would leave the
  * hero, which the camera starts ahead of, permanently dim.
+ *
+ * The passed side mirrors the approach: full for NEAR, then out by
+ * PASS_FADE. Returning 1 for every passed panel left sections pinned at
+ * full opacity for PASSED units after the camera left them, then popped.
  */
 function sceneOpacity(d: number, span: number) {
-  if (d > 0) return 1
+  if (d > 0) {
+    if (d >= PASS_FADE) return 0
+    if (d <= NEAR) return 1
+    return Math.max(0, 1 - (d - NEAR) / Math.max(1, PASS_FADE - NEAR)) ** FALLOFF
+  }
   const a = -d
   if (a <= NEAR) return 1
   return Math.max(0, 1 - (a - NEAR) / Math.max(1, span - NEAR)) ** FALLOFF

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
-import { OFFSET_CULL, offsetBlur, offsetOpacity, offsetTransform } from '../../lib/depth'
+import { PASS_FADE, offsetBlur, offsetOpacity, offsetTransform } from '../../lib/depth'
 import { distanceTo, scroll } from '../../lib/scroll'
 
 type Props = {
@@ -37,10 +37,11 @@ export function FloatPanel({ sceneZ, offsetZ = 0, side, x, y = 0, children, clas
       const el = ref.current
       if (!el) return
 
-      // Cull on the scene, not on the panel's own z. Once the scene has been
-      // passed its parent is scaled up past the viewer, which would drag these
-      // panels outward across the screen even though their own z says otherwise.
-      if (distanceTo(sceneZ) > OFFSET_CULL) {
+      // Cull on the scene, not on the panel's own z: these panels are children
+      // of the scene's own panel, so once that has faded out they are invisible
+      // anyway. Culling any earlier would drop them while still readable, which
+      // is what hid the skill constellation before its scene was ever centred.
+      if (distanceTo(sceneZ) > PASS_FADE) {
         el.style.visibility = 'hidden'
         return
       }

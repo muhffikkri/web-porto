@@ -57,8 +57,12 @@ export function offsetBlur(d: number) {
 /** Distance within which an element is fully legible and sharp. */
 export const NEAR = 14
 
-/** Past this the scene has been passed and should stop painting. */
-export const OFFSET_CULL = -2
+/**
+ * Units past the camera at which a passed scene has faded out completely.
+ * Shared by the scene panels and the float panels inside them, so children
+ * are only dropped once their parent is already invisible.
+ */
+export const PASS_FADE = 24
 
 /** Signed distance from the camera to a z inside a scene. */
 export const distanceIn = (sceneZ: number, offsetZ: number) => distanceTo(sceneZ + offsetZ)

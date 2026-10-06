@@ -19,11 +19,11 @@ export type Star = {
 }
 
 /**
- * Groups nearer the front of the scene. The nearest group still has to be
- * ahead of the camera while its scene is centred, otherwise its stars are
- * culled before the reader reaches them.
+ * Groups nearer the front of the scene. Every group must sit within NEAR of
+ * the scene's centre, jitter included: past that the depth curve dims the
+ * stars, and the deepest group would be gone by the time the scene is read.
  */
-const GROUP_Z = [-7, -12, -17]
+const GROUP_Z = [-4, -8, -12]
 const GROUP_SCALE = [1, 0.82, 0.68]
 
 /**
