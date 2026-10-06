@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import type { Group, MeshStandardMaterial } from 'three'
+import type { Group, Mesh, MeshStandardMaterial } from 'three'
 import { cameraZ } from '../../lib/scroll'
 import { platformOpacity, platformVisible, platformY } from '../../lib/platform'
 import { Avatar } from './Avatar'
@@ -30,7 +30,14 @@ export function Platform({ z, width = 15, depth = 11 }: Props) {
     g.visible = platformVisible(d)
     if (!g.visible) return
     g.position.y = platformY(d)
-    if (mat.current) mat.current.opacity = platformOpacity(d)
+    const opacity = platformOpacity(d)
+    if (mat.current) mat.current.opacity = opacity
+    // The avatar shares the slab's fade, or it hangs in the air once the
+    // platform underneath has gone.
+    g.traverse((o) => {
+      const m = (o as Mesh).material as MeshStandardMaterial | undefined
+      if (m && m !== mat.current) m.opacity = opacity
+    })
   })
 
   return (

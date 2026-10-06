@@ -1,4 +1,4 @@
-import { CAMERA_START, WORLD_LENGTH } from '../data/scenes'
+import { CAMERA_START, WORLD_LENGTH } from '../data/scenes.ts'
 
 /**
  * Single source of truth for the camera. Mutated every frame by Lenis,

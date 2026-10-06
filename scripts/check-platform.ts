@@ -5,6 +5,7 @@ import {
   REST_Y,
   SLOPE,
   SOLID_RANGE,
+  UNDERFOOT,
   platformOpacity,
   platformVisible,
   platformY,
@@ -33,22 +34,38 @@ assert.ok(platformY(1e6) === REST_Y - MAX_DROP_DISTANCE * SLOPE, 'drop is capped
 // Reversible: the curve only depends on |d|, so scrolling back is exact.
 for (const d of [0, 7, 33, 88]) assert.equal(platformY(d), platformY(-d))
 
-// Opacity: solid under the camera, gone in the fog, never out of range.
-assert.equal(platformOpacity(0), 0.85)
+// Opacity: gone underfoot, solid at reading distance, gone in the fog.
+assert.equal(platformOpacity(0), 0, 'slab directly under the camera fills the frame')
+assert.equal(platformOpacity(UNDERFOOT), 0.85, 'not solid at reading distance')
 assert.equal(platformOpacity(SOLID_RANGE), 0.85)
 assert.equal(platformOpacity(FADE_RANGE), 0)
 assert.equal(platformOpacity(FADE_RANGE * 2), 0)
 assert.ok(platformOpacity(-15) === platformOpacity(15))
-let lastOpacity = Infinity
+
+// Never out of range, and single-peaked: up to reading distance, then down.
 for (let d = 0; d < FADE_RANGE * 1.5; d += 2) {
   const o = platformOpacity(d)
   assert.ok(o >= 0 && o <= 0.85, `opacity out of range at d=${d}: ${o}`)
-  assert.ok(o <= lastOpacity, `opacity rose again at d=${d}`)
-  lastOpacity = o
+}
+let peak = 0
+for (let d = 0; d <= SOLID_RANGE; d += 1) {
+  const o = platformOpacity(d)
+  assert.ok(o >= peak, `opacity fell before reading distance at d=${d}`)
+  peak = o
+}
+for (let d = SOLID_RANGE; d < FADE_RANGE * 1.5; d += 2) {
+  const o = platformOpacity(d)
+  assert.ok(o <= peak, `opacity rose again at d=${d}`)
+  peak = o
 }
 
+// d = 0 means the camera has reached the platform, which is still ahead.
 assert.equal(platformVisible(0), true)
-assert.equal(platformVisible(-120), true)
+assert.equal(platformVisible(-100), true, 'inside the cull range')
+assert.equal(platformVisible(-140), false, 'beyond the cull range')
 assert.equal(platformVisible(200), false)
+// Passed platforms must not draw: the camera would be inside them.
+assert.equal(platformVisible(5), false, 'passed platform is still drawn')
+assert.equal(platformVisible(-200), false, 'uncapped far platform is drawn')
 
 console.log('platform ok')
