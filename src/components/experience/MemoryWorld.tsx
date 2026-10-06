@@ -1,6 +1,5 @@
 import { Canvas } from '@react-three/fiber'
 import { CameraRig } from './CameraRig'
-import { FloatingFragments } from './FloatingFragments'
 import { ParticleField } from './ParticleField'
 import { Atmosphere } from './Atmosphere'
 import { Road } from './Road'
@@ -24,7 +23,6 @@ export function MemoryWorld({ reduced }: { reduced: boolean }) {
       <ambientLight intensity={1.2} />
       <directionalLight position={[6, 12, 8]} intensity={0.7} />
       <Atmosphere />
-      <FloatingFragments reduced={reduced} count={QUALITY.fragments} />
       <ParticleField reduced={reduced} count={QUALITY.particles} />
       <Road />
     </Canvas>
