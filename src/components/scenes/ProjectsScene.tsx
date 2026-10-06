@@ -21,9 +21,13 @@ export function ProjectsScene() {
         ))}
       </ol>
 
-      {PROJECTS.map((p, i) => (
-        <ProjectCard key={p.id} project={p} index={i} count={PROJECTS.length} />
-      ))}
+      {/* Grouped so the narrow layout can stack the cards instead of
+          relying on absolute positioning. */}
+      <div className="panel--cards">
+        {PROJECTS.map((p, i) => (
+          <ProjectCard key={p.id} project={p} index={i} count={PROJECTS.length} />
+        ))}
+      </div>
     </section>
   )
 }

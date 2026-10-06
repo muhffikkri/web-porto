@@ -9,10 +9,14 @@ const TILE = 110
 const SPREAD_X = 80
 const SPREAD_Y = 40
 
-export function ParticleField({ reduced }: { reduced: boolean }) {
+export function ParticleField({
+  reduced,
+  count,
+}: {
+  reduced: boolean
+  count: number
+}) {
   const points = useRef<Points>(null)
-  const small = typeof window !== 'undefined' && window.innerWidth < 720
-  const count = small ? 260 : 900
 
   const positions = useMemo(() => {
     const rand = mulberry32(0xd15a)

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "tsc --noEmit && node --experimental-strip-types scripts/check-intro.ts && node --experimental-strip-types scripts/check-platform.ts && node --experimental-strip-types scripts/check-constellation.ts && node --experimental-strip-types scripts/check-carousel.ts && node --experimental-strip-types scripts/check-experience.ts"
+    "check": "tsc --noEmit && node --experimental-strip-types scripts/check-intro.ts && node --experimental-strip-types scripts/check-platform.ts && node --experimental-strip-types scripts/check-constellation.ts && node --experimental-strip-types scripts/check-carousel.ts && node --experimental-strip-types scripts/check-experience.ts && node --experimental-strip-types scripts/check-phase7.ts"
   },
   "repository": {
     "type": "git",

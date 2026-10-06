@@ -10,7 +10,15 @@
   --accent: #8f5d14;
   --accent-line: #b07a22;
   --rule: rgba(22, 24, 28, 0.16);
+  --rule-soft: rgba(22, 24, 28, 0.09);
   --vig: rgba(244, 243, 239, 0.9);
+  --surface: #ffffff;
+
+  --step--1: clamp(0.7rem, 0.67rem + 0.12vw, 0.79rem);
+  --step-0: clamp(0.95rem, 0.9rem + 0.2vw, 1.06rem);
+  --step-1: clamp(1.12rem, 1.03rem + 0.42vw, 1.42rem);
+  --dur: 420ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 *,
@@ -79,14 +87,41 @@ ul {
 
 /* ---- text layer: one perspective, panels placed along Z ---- */
 
-.depth-layer {
+/* main.depth-layer is the accessible text layer: it owns the document
+   outline and skip target, while .depth-panel inside it does the 3D. */
+main.depth-layer {
   position: fixed;
   inset: 0;
   z-index: 4;
   overflow: hidden;
   pointer-events: none;
   perspective: 1000px;
-  perspective-origin: 50% 46%;
+  /* The vanishing point sits on the viewport's true centre, so a panel
+     pushed down the corridor converges where the text is centred rather
+     than pulling everything slightly above it. */
+  perspective-origin: 50% 50%;
+}
+
+/* The skip target: the first focusable thing in the document. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 60;
+  transform: translate(-50%, -140%);
+  padding: 0.85rem 1.3rem;
+  background: var(--surface);
+  border: 1px solid var(--accent-line);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  transition: transform 220ms var(--ease);
+}
+
+.skip-link:focus-visible {
+  transform: translate(-50%, 0);
 }
 
 .depth-panel {
@@ -145,6 +180,22 @@ ul {
 .panel-center > * {
   width: min(46vw, 34rem);
   pointer-events: auto;
+}
+
+/*
+ * The opening title hangs from the middle of the viewport rather than being
+ * centred as a block: the block starts at centre and reads downward, so the
+ * name opens at eye level instead of landing in the top half.
+ */
+.panel--hero .panel-center {
+  justify-content: flex-start;
+  padding-top: 50vh;
+}
+
+/* The title is sized to the viewport, so it takes the full width rather
+   than the narrow text column the other scenes use. */
+.panel--hero .panel-center > * {
+  width: 100%;
 }
 
 .float-panel {
@@ -224,7 +275,7 @@ ul {
   inset: 0;
   z-index: 5;
   pointer-events: none;
-  background: radial-gradient(120% 95% at 50% 46%, transparent 42%, var(--vig) 100%);
+  background: radial-gradient(120% 95% at 50% 50%, transparent 42%, var(--vig) 100%);
 }
 
 /* ---- opening sequence ---- */
@@ -300,6 +351,17 @@ ul {
   letter-spacing: -0.02em;
 }
 
+/*
+ * In flow the title has to fit the page rather than grow past the viewport,
+ * so it is capped here. In corridor mode it stays at 9vw and the camera grows
+ * it through the frame as it travels.
+ */
+@media (prefers-reduced-motion: reduce), (max-width: 720px) {
+  .hero-name {
+    font-size: clamp(2.2rem, 7vw, 4.5rem);
+  }
+}
+
 .hero-role {
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -333,29 +395,38 @@ ul {
 }
 
 .skill-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--ink-2);
-}
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-2);
+  }
+
+  /* Stacked layout reads the constellation as a list, so the labels are
+     sized here rather than per-star from the constellation data. */
+  .skill-star .skill-label {
+    font-size: 0.85rem !important;
+    letter-spacing: 0.12em;
+  }
 
 /* ---- project carousel ---- */
 
-/* The heading sits above the arc, out of the cards' way. */
+/* The heading is centred in the viewport like every other scene's text, and
+   the arc stands below it rather than beside it. */
 .carousel-head {
   position: absolute;
-  inset: 0 0 auto 0;
+  inset: 0;
   z-index: 2;
-  padding-top: 14vh;
+  display: grid;
+  place-items: center;
   pointer-events: none;
 }
 
 .project-card {
   position: absolute;
-  top: 54%;
+  top: 68%;
   left: 50%;
   width: min(30vw, 26rem);
   margin-top: -1.5rem;
@@ -552,25 +623,255 @@ ul {
   transform-origin: top center;
 }
 
-@media (max-width: 720px) {
-  .hud-nav {
+/*
+ * Reduced motion, and narrow screens.
+ *
+ * Both are the same idea: the corridor cannot be travelled on a phone, so the
+ * depth layer stops being a corridor and becomes a document. Panels stack,
+ * nothing is positioned absolutely, and every scene is reachable by scrolling
+ * and by tabbing. WebGL keeps drawing behind it when it can.
+ */
+@media (prefers-reduced-motion: reduce), (max-width: 720px) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* The panels are now in normal flow and set the document height, so the
+     camera rail would just be a very long stretch of empty page. */
+  main.depth-layer {
+    position: static;
+    perspective: none;
+    overflow: visible;
+  }
+
+  .scroll-rail,
+  .vignette {
     display: none;
   }
 
-  /* Too narrow for panels either side of the text, so they stack. */
+  /* Static: no translateZ, no blur, no per-frame fade. */
+  .depth-panel,
+  .depth-panel-body,
+  .float-panel,
+  .project-card,
+  .milestone {
+    position: static !important;
+    visibility: visible !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    translate: none !important;
+    inset: auto !important;
+    margin: 0 auto 3rem;
+    left: auto !important;
+    top: auto !important;
+    width: min(88vw, 40rem);
+  }
+
+  .depth-panel {
+    padding: 3rem 0 0;
+    height: auto !important;
+  }
+
+  /* Dense content keeps its own rhythm rather than taking the per-scene gap. */
+  .skill-star,
+  .project-tags,
+  .contact-links {
+    margin-bottom: 0.5rem;
+  }
+
+  /* The constellation becomes a wrapped cloud of labels. */
+  .panel--cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem 1.4rem;
+  }
+
+  .skill-star {
+    width: auto;
+    margin: 0;
+  }
+
+  /* Nested content takes the panel's width, not its own narrow default:
+     in a column there is nothing to float beside. */
+  .about-field,
+  .skill-star .skill-label,
+  .project-card {
+    width: auto;
+  }
+
+  /* Cards and milestones are one per line. */
+  .panel--carousel .panel--cards,
+  .panel--experience .panel--cards {
+    display: block;
+  }
+
+  /* The HUD sits over the page on narrow screens, so leave room for it. */
+  .hud-memory {
+    background: var(--bg);
+    padding: 0.2rem 0.4rem;
+  }
+
+  .project-card,
+  .milestone {
+    margin-bottom: 1.2rem;
+  }
+
+  .panel,
   .panel-center {
-    width: 86vw;
+    position: static !important;
+    display: block !important;
+    height: auto !important;
+    width: auto;
+    inset: auto !important;
+    padding-top: 0;
   }
 
-  .float-panel {
+  /* In flow there is no viewport to hang the title from. */
+  .panel--hero .panel-center {
+    padding-top: 0;
+  }
+
+  /* The HUD is fixed and would sit over the text. In a document layout it
+     belongs in the flow, and the scene counter moves to the top bar. */
+  .hud {
     position: static;
-    translate: none;
-    grid-area: auto;
-    margin-top: 1.2rem;
+    display: block;
+    padding: 1.5rem 0 0;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
+  .hud-memory {
+    position: static;
+  }
+
+  .hud-nav,
+  .hud-track {
+    display: none;
+  }
+
+  /* The scroll cue describes a corridor the reader cannot travel. */
+  .hero-cue {
+    display: none;
+  }
+
+  /* The counter is written every frame by the HUD's rAF loop, which only runs
+     to drive the camera. In flow there is no camera, so it is static. */
+  .hud {
+    display: none;
+  }
+
+  /* Headings and their content are one block. The scene heading was an
+     absolutely centred overlay in corridor mode; in flow it must not overlap
+     what follows it. */
+  .scene-heading {
+    position: static;
+    display: flex;
+    margin-bottom: 1.4rem;
+  }
+
+  /* Every scene is a band rather than a centred overlay, so the rhythm has
+     to come from the scene itself rather than from stacking margins. The
+     headings were absolutely centred overlays, so in flow they need to be
+     normal blocks with their own spacing.
+     display: block matters: as a grid with place-items the panel-centred
+     body resolves its collapsed bottom margin against the row and is pushed
+     up out of the viewport. */
+  .depth-panel {
+    display: block !important;
+    padding: 3rem 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .depth-panel:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .panel {
+    display: grid;
+    gap: 1.6rem;
+    /* The hero's cue belongs to the corridor, not to a document. */
+    align-content: start;
+  }
+
+  /* In flow the content is the block, so it sets the width and centres itself
+     rather than filling the column and letting text sit at the left edge. */
+  .panel,
+  .panel-center,
+  .panel--cards {
+    width: min(88vw, 44rem);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* The skills scene has no panel-center block: its heading is a sibling of
+     the star field, so give that field the gap the grid would have given. */
+  .panel--wide .scene-heading {
+    margin-bottom: 1.6rem;
+  }
+
+  .panel--wide .panel--cards {
+    margin-top: 0;
+  }
+
+  .panel-center > * {
+    width: auto;
+  }
+
+  .carousel-head {
+    position: static;
+    padding: 0;
+    margin-bottom: 1.6rem;
+  }
+
+  .float-panel,
+  .project-card,
+  .milestone {
+    text-align: left;
+  }
+
+  /* The About fields and cards read as a stack of entries. */
+  .about-field {
+    margin: 0 auto 1.2rem;
+  }
+
+  /* Stacked, the right-hand fields lose the reason for their reversed
+     border: there is no opposite side to face. */
+  .float-panel--right .about-field {
+    border-right: 0;
+    border-left: 1px solid var(--accent-line);
+    padding: 0.9rem 0 0.9rem 1.1rem;
+    text-align: left;
+  }
+
+  .milestone,
+  .project-card {
+    margin: 0 auto 1.6rem;
+  }
+
+  .panel--cards {
+    position: static !important;
+    height: auto !important;
+    inset: auto !important;
+    margin: 0 auto;
+  }
+
+  .panel-center > * {
+    width: min(88vw, 40rem);
+    margin: 0 auto 1.2rem;
+  }
+
+  .scene-heading {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   .hero-cue {
     animation: none;
     opacity: 0.7;

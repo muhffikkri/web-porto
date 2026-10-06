@@ -3,27 +3,30 @@ import { CameraRig } from './CameraRig'
 import { FloatingFragments } from './FloatingFragments'
 import { ParticleField } from './ParticleField'
 import { Atmosphere } from './Atmosphere'
-import { Platform } from './Platform'
-import { SCENES } from '../../data/scenes'
+import { Road } from './Road'
+import { qualityFor } from '../../lib/quality'
+
+/**
+ * Read once: the fragment and particle counts are baked into buffer geometry,
+ * so they cannot change without a rebuild mid-scroll.
+ */
+const QUALITY = qualityFor()
 
 export function MemoryWorld({ reduced }: { reduced: boolean }) {
   return (
     <Canvas
-      dpr={Math.min(window.devicePixelRatio, 1.75)}
+      dpr={QUALITY.dpr}
       camera={{ fov: 62, near: 0.1, far: 400 }}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: QUALITY.tier !== 'low', powerPreference: 'high-performance' }}
       style={{ position: 'fixed', inset: 0, zIndex: 0 }}
     >
       <CameraRig />
       <ambientLight intensity={1.2} />
       <directionalLight position={[6, 12, 8]} intensity={0.7} />
       <Atmosphere />
-      <FloatingFragments reduced={reduced} />
-      <ParticleField reduced={reduced} />
-      {/* No platform at the hero: the camera already starts standing on it. */}
-      {SCENES.slice(1).map((s) => (
-        <Platform key={s.id} z={s.z} />
-      ))}
+      <FloatingFragments reduced={reduced} count={QUALITY.fragments} />
+      <ParticleField reduced={reduced} count={QUALITY.particles} />
+      <Road />
     </Canvas>
   )
 }

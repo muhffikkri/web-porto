@@ -2,14 +2,14 @@ import { useLayoutEffect, useRef } from 'react'
 import { SCENES } from '../../data/scenes'
 import { MILESTONES, type Milestone } from '../../data/experience'
 import { marker } from '../../lib/milestones'
-import { cameraZ } from '../../lib/scroll'
+import { cameraZ, scroll } from '../../lib/scroll'
 import { SceneTitle } from '../ui/SceneTitle'
 
 const Z = SCENES[4].z
 
 export function ExperienceScene() {
   return (
-    <section className="panel" aria-label="Experience">
+    <section className="panel panel--experience" aria-label="Experience">
       <div className="panel-center">
         <SceneTitle title="EXPERIENCE" index="04" id="experience-heading" />
       </div>
@@ -22,9 +22,11 @@ export function ExperienceScene() {
         ))}
       </ol>
 
-      {MILESTONES.map((m, i) => (
-        <Milestone key={m.id} milestone={m} index={i} count={MILESTONES.length} />
-      ))}
+      <div className="panel--cards">
+        {MILESTONES.map((m, i) => (
+          <Milestone key={m.id} milestone={m} index={i} count={MILESTONES.length} />
+        ))}
+      </div>
     </section>
   )
 }
@@ -53,9 +55,12 @@ function Milestone({
         return
       }
       el.style.visibility = 'visible'
-      el.style.transform = `translate3d(0, 0, ${Math.min(s.d, 0) * 14}px) scale(${s.scale})`
+      el.style.transform = scroll.stepped
+        ? 'none'
+        : `translate3d(0, 0, ${Math.min(s.d, 0) * 14}px) scale(${s.scale})`
       el.style.opacity = String(s.opacity)
-      el.style.filter = s.blur ? `blur(${s.blur}px)` : ''
+      const blur = scroll.stepped ? 0 : s.blur
+      el.style.filter = blur ? `blur(${blur}px)` : ''
     }
     raf = requestAnimationFrame(place)
     return () => cancelAnimationFrame(raf)

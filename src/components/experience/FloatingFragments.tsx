@@ -22,13 +22,17 @@ type Item = {
   spin: number
 }
 
-export function FloatingFragments({ reduced }: { reduced: boolean }) {
+export function FloatingFragments({
+  reduced,
+  count,
+}: {
+  reduced: boolean
+  count: number
+}) {
   const boxes = useRef<InstancedMesh>(null)
   const planes = useRef<InstancedMesh>(null)
   const dummy = useMemo(() => new Object3D(), [])
-  const small = typeof window !== 'undefined' && window.innerWidth < 720
-  const count = small ? 26 : 64
-  const planeCount = small ? 18 : 45
+  const planeCount = Math.round(count * 0.7)
 
   const seeds = useMemo(() => {
     const rand = mulberry32(0x5eed)
@@ -49,6 +53,8 @@ export function FloatingFragments({ reduced }: { reduced: boolean }) {
   }, [])
 
   useFrame((_, delta) => {
+    // Reduced motion: hold the fragments still. They stay in the corridor,
+    // they just stop drifting.
     const dt = reduced ? 0 : delta
     place(boxes.current, seeds.boxes, dummy, dt)
     place(planes.current, seeds.planes, dummy, dt)
@@ -75,7 +81,13 @@ function place(mesh: InstancedMesh | null, items: Item[], dummy: Object3D, dt: n
   for (let i = 0; i < items.length; i++) {
     const it = items[i]
     const z = (((cz - it.z) % TILE) + TILE) % TILE - TILE * 0.5
-    dummy.position.set(it.x + Math.sin(it.bob) * 0.5, it.y + Math.cos(it.bob * 1.3) * 0.4, z)
+    // No clock-driven bob when reduced: dt is 0, so the fragments hold still.
+    const t = dt === 0 ? 0 : performance.now() * 0.0004
+    dummy.position.set(
+      it.x + Math.sin(it.bob + t) * 0.5,
+      it.y + Math.cos(it.bob * 1.3 + t) * 0.4,
+      z,
+    )
     dummy.rotation.set(it.rx + dt * it.spin, it.ry + dt * it.spin * 0.7, it.rz)
     dummy.scale.setScalar(it.s)
     dummy.updateMatrix()

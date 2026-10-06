@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { Project } from '../../data/projects'
 import { slot, type Slot } from '../../lib/carousel'
+import { scroll } from '../../lib/scroll'
 
 type Props = {
   project: Project
@@ -28,9 +29,17 @@ export function ProjectCard({ project, index, count }: Props) {
         return
       }
       el.style.visibility = 'visible'
-      el.style.transform = `translate3d(${s.x}vw, 0, 0) rotateY(${s.tilt}deg) scale(${s.scale})`
-      el.style.opacity = String(s.opacity)
-      el.style.filter = s.blur ? `blur(${s.blur}px)` : ''
+      // Reduced motion: the arc becomes a stack. No travelling sideways, no
+      // tilt, no blur. The centred card is simply the visible one.
+      if (scroll.stepped) {
+        el.style.transform = 'none'
+        el.style.opacity = s.centred ? '1' : '0'
+        el.style.filter = ''
+      } else {
+        el.style.transform = `translate3d(${s.x}vw, 0, 0) rotateY(${s.tilt}deg) scale(${s.scale})`
+        el.style.opacity = String(s.opacity)
+        el.style.filter = s.blur ? `blur(${s.blur}px)` : ''
+      }
       el.style.pointerEvents = s.centred ? 'auto' : 'none'
       el.setAttribute('aria-hidden', String(!s.centred))
     }

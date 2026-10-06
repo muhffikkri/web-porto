@@ -31,16 +31,31 @@ export function offsetTransform(d: number) {
   return `translate3d(0, ${(clamped * PX_PER_UNIT) / 6}px, ${clamped * PX_PER_UNIT}px)`
 }
 
-/** Opacity for an element `d` units from the camera. */
-export function offsetOpacity(d: number) {
+/**
+ * Opacity for an element `d` units from the camera.
+ *
+ * Two-part, not one curve. Within `NEAR` the element is fully legible
+ * whatever its distance, because the camera is arriving at it and it has to
+ * read on arrival. Past that it falls away into the distance.
+ *
+ * A pure distance curve gets this wrong at the start of the journey: the hero
+ * sits CAMERA_START units ahead of the camera at scroll 0, so a curve that
+ * fades with distance leaves the opening title permanently dim.
+ */
+export function offsetOpacity(d: number, span = FADE) {
   if (d > 0) return 1
-  return Math.max(0, 1 + d / FADE) ** FALLOFF
+  const a = -d
+  if (a <= NEAR) return 1
+  return Math.max(0, 1 - (a - NEAR) / Math.max(1, span - NEAR)) ** FALLOFF
 }
 
 export function offsetBlur(d: number) {
   const ahead = -d
-  return ahead > 4 ? Math.min(5, (ahead - 4) / 11) : 0
+  return ahead > NEAR ? Math.min(5, (ahead - NEAR) / 11) : 0
 }
+
+/** Distance within which an element is fully legible and sharp. */
+export const NEAR = 14
 
 /** Past this the scene has been passed and should stop painting. */
 export const OFFSET_CULL = -2

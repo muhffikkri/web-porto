@@ -1,7 +1,11 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { SCENES } from '../../data/scenes'
-import { distanceTo } from '../../lib/scroll'
+import { distanceTo, scroll } from '../../lib/scroll'
+import { NEAR } from '../../lib/depth'
 import { intro } from '../../lib/intro'
+
+/** Falloff exponent. Higher keeps far panels fainter for longer. */
+const FALLOFF = 3
 import { HeroScene } from '../scenes/HeroScene'
 import { AboutScene } from '../scenes/AboutScene'
 import { SkillsScene } from '../scenes/SkillsScene'
@@ -13,8 +17,19 @@ const CONTENT = [HeroScene, AboutScene, SkillsScene, ProjectsScene, ExperienceSc
 
 /** CSS pixels of panel travel per world unit. */
 const PX_PER_UNIT = 14
-/** Falloff exponent. Higher keeps far panels fainter for longer. */
-const FALLOFF = 3
+/**
+ * Opacity for a scene panel.
+ *
+ * Within NEAR the scene the camera is travelling toward is fully legible, and
+ * only past that does it fall off. A single distance curve would leave the
+ * hero, which the camera starts ahead of, permanently dim.
+ */
+function sceneOpacity(d: number, span: number) {
+  if (d > 0) return 1
+  const a = -d
+  if (a <= NEAR) return 1
+  return Math.max(0, 1 - (a - NEAR) / Math.max(1, span - NEAR)) ** FALLOFF
+}
 /** Once a panel is this many units past the camera it has left the viewport. */
 const PASSED = 26
 
@@ -25,7 +40,7 @@ const PASSED = 26
  */
 export function DepthLayer() {
   return (
-    <div className="depth-layer">
+    <>
       {SCENES.map((scene, i) => {
         const Content = CONTENT[i]
         return (
@@ -34,7 +49,7 @@ export function DepthLayer() {
           </DepthPanel>
         )
       })}
-    </div>
+    </>
   )
 }
 
@@ -74,13 +89,20 @@ export function DepthPanel({
 
       // Signed translateZ: a panel ahead is pushed away, a panel the camera
       // has passed is pulled toward the viewer and grows past the screen.
-      el.style.transform = `translate3d(0, ${(d * PX_PER_UNIT) / 6}px, ${d * PX_PER_UNIT}px)`
+      // Under reduced motion the panel does not move: the camera cuts.
+      const tz = scroll.stepped ? 0 : d * PX_PER_UNIT
+      el.style.transform = `translate3d(0, ${(d * PX_PER_UNIT) / 6}px, ${tz}px)`
 
-      // Cubic falloff: the next scene reads as a hint through the current one,
-      // never competing with it.
-      const fade = d > 0 ? 1 : Math.max(0, 1 + d / span) ** FALLOFF
+      const fade = sceneOpacity(d, span)
+      // Reduced motion cuts between scenes, so nothing slides or blurs into
+      // place: the panel is simply there or it is not.
+      if (scroll.stepped) {
+        content.style.opacity = fade > 0.5 ? '1' : '0'
+        content.style.filter = ''
+        return
+      }
       content.style.opacity = String(gated ? fade * intro.reveal : fade)
-      const blur = -d > 4 ? Math.min(5, (-d - 4) / 11) : 0
+      const blur = -d > NEAR ? Math.min(5, (-d - NEAR) / 11) : 0
       content.style.filter = blur ? `blur(${blur}px)` : ''
     }
     raf = requestAnimationFrame(place)

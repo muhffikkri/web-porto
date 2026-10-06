@@ -4,12 +4,15 @@ import { cameraZ, scroll } from '../../lib/scroll'
 import { scrollTargetFor } from '../../hooks/useScrollProgress'
 
 /** DOM overlay: stays selectable, accessible, and out of the draw budget. */
-export function HUD() {
+export function HUD({ corridor }: { corridor: boolean }) {
   const counter = useRef<HTMLSpanElement>(null)
   const bar = useRef<HTMLSpanElement>(null)
   const items = useRef<(HTMLAnchorElement | null)[]>([])
 
   useEffect(() => {
+    // In flow there is no camera to report on, so there is nothing to loop.
+    if (!corridor) return
+
     let raf = 0
     const tick = () => {
       raf = requestAnimationFrame(tick)
@@ -25,7 +28,7 @@ export function HUD() {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [])
+  }, [corridor])
 
   return (
     <div className="hud">

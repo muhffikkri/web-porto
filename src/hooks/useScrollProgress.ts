@@ -13,10 +13,12 @@ export function scrollTargetFor(sceneId: string) {
 
 export function useScrollProgress() {
   useEffect(() => {
+    // Under reduced motion there is nothing to smooth: the camera cuts between
+    // scenes, so the easing would only add lag between what is read and shown.
     const lenis = new Lenis({
-      duration: 1.1,
+      duration: scroll.stepped ? 0 : 1.1,
+      smoothWheel: !scroll.stepped,
       easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
-      smoothWheel: true,
     })
 
     // Deep link: #projects jumps the camera straight to that scene.

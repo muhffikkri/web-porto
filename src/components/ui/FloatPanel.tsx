@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { OFFSET_CULL, offsetBlur, offsetOpacity, offsetTransform } from '../../lib/depth'
-import { distanceTo } from '../../lib/scroll'
+import { distanceTo, scroll } from '../../lib/scroll'
 
 type Props = {
   /** World z of the owning scene. */
@@ -53,8 +53,9 @@ export function FloatPanel({ sceneZ, offsetZ = 0, side, x, y = 0, children, clas
       }
       el.style.visibility = 'visible'
       el.style.opacity = String(opacity)
-      el.style.transform = offsetTransform(d)
-      const blur = offsetBlur(d)
+      // Reduced motion cuts between scenes: nothing slides or blurs into place.
+      el.style.transform = scroll.stepped ? 'none' : offsetTransform(d)
+      const blur = scroll.stepped ? 0 : offsetBlur(d)
       el.style.filter = blur ? `blur(${blur}px)` : ''
     }
     raf = requestAnimationFrame(place)

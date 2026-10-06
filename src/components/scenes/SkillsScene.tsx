@@ -25,20 +25,23 @@ export function SkillsScene() {
         </ul>
       </div>
 
-      {stars.map((star) => (
-        <FloatPanel
-          key={star.skill}
-          sceneZ={Z}
-          offsetZ={star.z}
-          x={star.x}
-          y={star.y}
-          className="skill-star"
-        >
-          <span className="skill-label" style={{ fontSize: `${star.size}px` }}>
-            {star.skill}
-          </span>
-        </FloatPanel>
-      ))}
+      {/* Grouped so the stacked layout can wrap them as a cloud. */}
+      <div className="panel--cards">
+        {stars.map((star) => (
+          <FloatPanel
+            key={star.skill}
+            sceneZ={Z}
+            offsetZ={star.z}
+            x={star.x}
+            y={star.y}
+            className="skill-star"
+          >
+            <span className="skill-label" style={{ fontSize: `${star.size}px` }}>
+              {star.skill}
+            </span>
+          </FloatPanel>
+        ))}
+      </div>
     </section>
   )
 }
