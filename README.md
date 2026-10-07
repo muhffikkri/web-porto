@@ -4,6 +4,8 @@ A 3D portfolio built as a scroll-driven memory corridor. The page is a walk
 down a WebGL road, and each section of the resume docks into the scene with
 depth, fog and drifting glass shards.
 
+![Preview](screenshots/preview.png)
+
 ## How it reads
 
 - **Corridor mode.** On a desktop browser with WebGL, scrolling drives a
