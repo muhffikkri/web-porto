@@ -10,7 +10,7 @@ import { cameraZ } from './scroll.ts'
  */
 
 /** Camera travel between one project centring and the next. */
-export const SLICE = 6
+export const SLICE = 10
 
 /** Lateral gap between neighbours on the arc, as a percentage of viewport width. */
 export const SPACING = 27
