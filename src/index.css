@@ -186,13 +186,13 @@ main.depth-layer {
 }
 
 /*
- * The opening title hangs from the middle of the viewport rather than being
- * centred as a block: the block starts at centre and reads downward, so the
- * name opens at eye level instead of landing in the top half.
+ * The opening title hangs from the top quarter of the viewport rather than
+ * being centred as a block: the block starts high and reads downward, so the
+ * name opens near the top and the lines below stay in view.
  */
 .panel--hero .panel-center {
   justify-content: flex-start;
-  padding-top: 50vh;
+  padding-top: 24vh;
 }
 
 /* The title is sized to the viewport, so it takes the full width rather
@@ -427,28 +427,25 @@ main.depth-layer {
 
 /* ---- project carousel ---- */
 
-/* The heading is centred in the viewport like every other scene's text, and
-   the arc stands below it rather than beside it. */
+/* The heading sits at the top of the scene and the arc stands below it, so
+   the whole projects block reads high and the cards fill the space beneath. */
 .carousel-head {
   position: absolute;
   inset: 0;
   z-index: 2;
   display: grid;
-  place-items: center;
-  /* Matches .panel-center, so the heading rides at the same height as every
-     other scene's title. */
-  padding-bottom: 8vh;
+  place-items: start center;
+  padding-top: 10vh;
   pointer-events: none;
 }
 
 .project-card {
   position: absolute;
-  /* Anchored just below the heading rather than at two-thirds height, so the
-     whole card, links included, stays inside the viewport. */
-  top: calc(50% + 3rem);
+  /* Anchored just below the heading high in the scene, so the whole card,
+     links included, sits in the upper half instead of centred. */
+  top: 24vh;
   left: 50%;
-  width: min(30vw, 26rem);
-  margin-top: -1.5rem;
+  width: min(36vw, 30rem);
   /* Anchored at its own centre so the arc opens around the middle card. */
   translate: -50% 0;
   transform-style: preserve-3d;
@@ -513,10 +510,9 @@ main.depth-layer {
 }
 
 .project-screenshot {
-  max-width: 100%;
-  /* Capped to a share of the viewport so a tall card can never push its own
-     links off the bottom edge. */
-  max-height: 20vh;
+  /* Fills the card's width at its own aspect ratio: enlarged, never cropped.
+     The card width is capped, so the image height is bounded too. */
+  width: 100%;
   height: auto;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
