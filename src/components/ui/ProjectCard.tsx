@@ -7,13 +7,15 @@ type Props = {
   project: Project
   index: number
   count: number
+  /** Opens the project's detail view. */
+  onOpen: (project: Project) => void
 }
 
 /**
  * One project on the arc. A card the camera has passed is culled rather than
  * scaled up, otherwise it sweeps across the readable card in front of it.
  */
-export function ProjectCard({ project, index, count }: Props) {
+export function ProjectCard({ project, index, count, onOpen }: Props) {
   const root = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
@@ -26,9 +28,13 @@ export function ProjectCard({ project, index, count }: Props) {
       const s: Slot = slot(index, count)
       if (!s.visible) {
         el.style.visibility = 'hidden'
+        el.inert = true
         return
       }
       el.style.visibility = 'visible'
+      // Only the centred card is reachable: it keeps the keys in a logical
+      // order instead of tabbing through every faded neighbour.
+      el.inert = !s.centred
       // Reduced motion: the arc becomes a stack. No travelling sideways, no
       // tilt, no blur. The centred card is simply the visible one.
       if (scroll.stepped) {
@@ -76,6 +82,12 @@ export function ProjectCard({ project, index, count }: Props) {
           )}
         </p>
       </article>
+
+      {/* Opens the detail view. In the corridor it is a full-card hit target
+          (the links above it still work); stacked, it is a visible action. */}
+      <button className="project-open" type="button" onClick={() => onOpen(project)}>
+        <span className="project-open-label">View {project.title} details</span>
+      </button>
     </div>
   )
 }

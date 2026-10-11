@@ -427,16 +427,16 @@ main.depth-layer {
 
 /* ---- project carousel ---- */
 
-/* The heading sits at the top of the scene and the arc stands below it, so
-   the whole projects block reads high and the cards fill the space beneath. */
+/* The heading opens centred, then JS lifts it toward the top as the reader
+   scrolls in. The arc appears below once it has climbed. */
 .carousel-head {
   position: absolute;
   inset: 0;
   z-index: 2;
   display: grid;
-  place-items: start center;
-  padding-top: 10vh;
+  place-items: center;
   pointer-events: none;
+  will-change: transform;
 }
 
 .project-card {
@@ -450,6 +450,25 @@ main.depth-layer {
   translate: -50% 0;
   transform-style: preserve-3d;
   will-change: transform, opacity, filter;
+}
+
+/* Full-card hit target for the detail view. Painted over the card body but
+   under the links, so GitHub and Live Demo still work. Stacked, it becomes a
+   visible action instead. */
+.project-open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.project-open-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .project-entry {
@@ -501,6 +520,12 @@ main.depth-layer {
 .project-links a:hover,
 .contact-links a:hover {
   color: var(--accent);
+}
+
+/* Keep the links above the card's own open-target. */
+.project-links a {
+  position: relative;
+  z-index: 2;
 }
 
 /* Project image styling */
@@ -596,6 +621,155 @@ main.depth-layer {
 
 .contact-links a:hover {
   border-bottom-color: var(--accent-line);
+}
+
+/* ---- project detail (lightbox) ---- */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(16, 17, 20, 0.7);
+  overflow: hidden;
+  animation: lightbox-in 260ms var(--ease) both;
+}
+
+.lightbox-scrim {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The lighthouse: a warm pool under the card with a slow sweep, so the opened
+   project is the one lit thing on screen. */
+.lightbox-glow,
+.lightbox-beam {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: 150vmax;
+  height: 150vmax;
+  translate: -50% -50%;
+}
+
+.lightbox-glow {
+  background: radial-gradient(closest-side, rgba(176, 122, 34, 0.34), rgba(176, 122, 34, 0) 68%);
+}
+
+.lightbox-beam {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 26deg,
+    rgba(176, 122, 34, 0.14) 40deg 52deg,
+    transparent 66deg 206deg,
+    rgba(176, 122, 34, 0.1) 218deg 230deg,
+    transparent 244deg 360deg
+  );
+  animation: lightbox-sweep 16s linear infinite;
+}
+
+.lightbox-card {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 58rem);
+  max-height: min(88vh, 52rem);
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--accent-line);
+  border-radius: 0.6rem;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+  text-align: left;
+  animation: lightbox-rise 320ms var(--ease) both;
+}
+
+.lightbox-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 54vh;
+  object-fit: contain;
+  background: #eceae5;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0.6rem 0.6rem 0 0;
+}
+
+.lightbox-body {
+  padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+.lightbox-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.6vw, 1.9rem);
+  line-height: 1.15;
+}
+
+.lightbox-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  margin-top: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-2);
+}
+
+.lightbox-desc {
+  margin-top: 1rem;
+  max-width: 62ch;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  padding: 0.55rem 0.95rem;
+  background: var(--bg);
+  border: 1px solid var(--accent-line);
+  border-radius: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.lightbox-close:hover {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightbox-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lightbox-sweep {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---- HUD ---- */
@@ -894,6 +1068,31 @@ main.depth-layer {
   .milestone,
   .project-card {
     margin: 0 auto 1.6rem;
+  }
+
+  /* Stacked, the invisible full-card target becomes a visible action, since a
+     card-wide click area would fight scrolling and text selection. */
+  .project-open {
+    position: static;
+    inset: auto;
+    display: inline-block;
+    margin-top: 0.9rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--accent-line);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .project-open-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
   }
 
   .panel--cards {

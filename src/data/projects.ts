@@ -2,6 +2,8 @@ export type Project = {
   id: string;
   title: string;
   description: string;
+  /** Longer text shown in the project's detail view. Falls back to description. */
+  detail?: string;
   tags: string[];
   github?: string;
   demo?: string;

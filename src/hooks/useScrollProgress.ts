@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import Lenis from 'lenis'
 import { scroll } from '../lib/scroll'
+import { setLenis } from '../lib/smooth'
 import { CAMERA_START, SCENES, WORLD_LENGTH } from '../data/scenes'
 
 /** Scroll offset that puts the camera exactly on a scene. */
@@ -44,9 +45,11 @@ export function useScrollProgress() {
       lastScroll = lenis.scroll
     }
     raf = requestAnimationFrame(tick)
+    setLenis(lenis)
 
     return () => {
       cancelAnimationFrame(raf)
+      setLenis(null)
       lenis.destroy()
     }
   }, [])
