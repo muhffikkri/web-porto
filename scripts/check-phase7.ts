@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
-import { CAMERA_START, SCENES, WORLD_LENGTH } from '../src/data/scenes.ts'
+import {
+  CAMERA_START,
+  PROJECT_HOLD,
+  SCENES,
+  WORLD_LENGTH,
+  WORLD_SCROLL_VH,
+} from '../src/data/scenes.ts'
 import { SCENE_PROGRESS, steppedCameraZ } from '../src/lib/scroll.ts'
+import { NEAR, PASS_TAIL } from '../src/lib/depth.ts'
 import { qualityFor, tierFor } from '../src/lib/quality.ts'
 
 // --- reduced motion: the camera parks, it does not travel ---
@@ -53,6 +60,22 @@ for (let i = 0; i < SCENE_PROGRESS.length - 1; i++) {
   const span = SCENE_PROGRESS[i + 1] - SCENE_PROGRESS[i]
   assert.ok(span > 0.05, `scene ${i} is only ${span.toFixed(3)} of the scroll`)
 }
+
+// --- screen time: every section is held long enough to read ---
+
+// A scene is fully lit for NEAR ahead of its centre plus its hold behind it.
+// That stretch, in viewport heights of scroll, is the time a reader gets.
+const VH_PER_UNIT = WORLD_SCROLL_VH / WORLD_LENGTH
+for (const s of SCENES) {
+  const hold = s.hold ?? NEAR
+  assert.ok(hold >= NEAR, `${s.id} is not fully lit around its centre`)
+  const readableVh = (NEAR + hold) * VH_PER_UNIT
+  assert.ok(readableVh >= 140, `${s.id} is read for only ${readableVh.toFixed(0)}vh of scroll`)
+}
+
+// The carousel holds for its whole arc, so the projects headline rides every
+// slide rather than fading mid-way.
+assert.equal(SCENES.find((s) => s.id === 'projects')?.hold, PROJECT_HOLD)
 
 // --- quality tiers ---
 

@@ -1,4 +1,4 @@
-import { SCENES } from '../data/scenes.ts'
+import { PROJECT_SLICE, SCENES } from '../data/scenes.ts'
 import { cameraZ } from './scroll.ts'
 
 /**
@@ -10,7 +10,7 @@ import { cameraZ } from './scroll.ts'
  */
 
 /** Camera travel between one project centring and the next. */
-export const SLICE = 10
+export const SLICE = PROJECT_SLICE
 
 /** Lateral gap between neighbours on the arc, as a percentage of viewport width. */
 export const SPACING = 27

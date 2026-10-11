@@ -1,26 +1,54 @@
+import { useEffect, useState } from 'react'
 import { MemoryWorld } from './components/experience/MemoryWorld'
 import { DepthLayer } from './components/ui/DepthLayer'
 import { HUD } from './components/ui/HUD'
 import { IntroSequence } from './components/ui/IntroSequence'
 import { useScrollProgress } from './hooks/useScrollProgress'
-import { useReducedMotion } from './hooks/useReducedMotion'
+import { useReducedMotion, prefersReducedMotion } from './hooks/useReducedMotion'
 import { WORLD_SCROLL_VH } from './data/scenes'
 import { hasWebGL } from './lib/quality'
 
 /**
+ * Width at or below which the corridor becomes a plain scrolling document.
+ * Must stay in step with the layout breakpoint in index.css.
+ */
+export const CORRIDOR_MIN_WIDTH = 720
+
+/**
  * Whether the experience is a corridor the camera travels, or a document that
- * scrolls. Read once: it decides the layout, not just the visuals.
+ * scrolls. Tablets keep the corridor; phones and reduced motion get the
+ * document.
  */
 export function isCorridor() {
   if (typeof window === 'undefined') return true
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-  return window.innerWidth > 720
+  if (prefersReducedMotion()) return false
+  return window.innerWidth > CORRIDOR_MIN_WIDTH
+}
+
+/**
+ * The corridor decision, kept in sync as the viewport changes. A phone
+ * rotation or a resize across the breakpoint has to re-lay the page, not
+ * leave it half corridor and half document.
+ */
+function useCorridor() {
+  const [corridor, setCorridor] = useState(isCorridor)
+  useEffect(() => {
+    const update = () => setCorridor(isCorridor())
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    window.addEventListener('resize', update)
+    mq.addEventListener('change', update)
+    return () => {
+      window.removeEventListener('resize', update)
+      mq.removeEventListener('change', update)
+    }
+  }, [])
+  return corridor
 }
 
 export default function App() {
   // Reduced motion first: it has to be on the store before scroll reads it.
   const reduced = useReducedMotion()
-  const corridor = isCorridor()
+  const corridor = useCorridor()
   useScrollProgress()
 
   return (

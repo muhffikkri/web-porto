@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { SCENES } from '../../data/scenes'
 import { distanceTo, scroll } from '../../lib/scroll'
-import { NEAR, PASS_FADE } from '../../lib/depth'
+import { NEAR, PASS_TAIL } from '../../lib/depth'
 import { intro } from '../../lib/intro'
 
 /** Falloff exponent. Higher keeps far panels fainter for longer. */
@@ -24,22 +24,23 @@ const PX_PER_UNIT = 14
  * only past that does it fall off. A single distance curve would leave the
  * hero, which the camera starts ahead of, permanently dim.
  *
- * The passed side mirrors the approach: full for NEAR, then out by
- * PASS_FADE. Returning 1 for every passed panel left sections pinned at
- * full opacity for PASSED units after the camera left them, then popped.
+ * The passed side mirrors the approach: full for `hold`, then out by
+ * PASS_TAIL. A scene whose content plays out down the corridor (the carousel)
+ * sets a long hold, so the panel stays fully lit until the last piece has had
+ * its moment. Returning 1 for every passed panel pinned sections at full
+ * opacity indefinitely, so a hold is always paired with a fade tail.
  */
-function sceneOpacity(d: number, span: number) {
+function sceneOpacity(d: number, span: number, hold: number) {
   if (d > 0) {
-    if (d >= PASS_FADE) return 0
-    if (d <= NEAR) return 1
-    return Math.max(0, 1 - (d - NEAR) / Math.max(1, PASS_FADE - NEAR)) ** FALLOFF
+    const end = hold + PASS_TAIL
+    if (d >= end) return 0
+    if (d <= hold) return 1
+    return Math.max(0, 1 - (d - hold) / Math.max(1, PASS_TAIL)) ** FALLOFF
   }
   const a = -d
   if (a <= NEAR) return 1
   return Math.max(0, 1 - (a - NEAR) / Math.max(1, span - NEAR)) ** FALLOFF
 }
-/** Once a panel is this many units past the camera it has left the viewport. */
-const PASSED = 26
 
 /**
  * All portfolio text lives in one DOM layer under a single CSS perspective,
@@ -52,7 +53,14 @@ export function DepthLayer() {
       {SCENES.map((scene, i) => {
         const Content = CONTENT[i]
         return (
-          <DepthPanel key={scene.id} z={scene.z} id={scene.id} span={scene.span} gated={i === 0}>
+          <DepthPanel
+            key={scene.id}
+            z={scene.z}
+            id={scene.id}
+            span={scene.span}
+            hold={scene.hold}
+            gated={i === 0}
+          >
             <Content />
           </DepthPanel>
         )
@@ -65,6 +73,7 @@ export function DepthPanel({
   z,
   id,
   span = 20,
+  hold = NEAR,
   gated,
   children,
 }: {
@@ -72,6 +81,12 @@ export function DepthPanel({
   id: string
   /** Distance ahead at which this panel has faded out. */
   span?: number
+  /**
+   * Distance past the camera the panel stays fully lit. A hold longer than
+   * NEAR also pins the panel centred, so it stands still while the camera
+   * travels on and its content (the carousel) plays in place.
+   */
+  hold?: number
   /** Fades in with the opening sequence instead of on distance alone. */
   gated?: boolean
   children: ReactNode
@@ -88,20 +103,27 @@ export function DepthPanel({
       if (!el || !content) return
 
       const d = distanceTo(z)
-      if (d > PASSED) {
+      // A held panel is culled only once its own fade has run out, which for a
+      // long hold is well past the next scene.
+      if (d >= hold + PASS_TAIL) {
         // Already travelled through the viewport.
         el.style.visibility = 'hidden'
         return
       }
       el.style.visibility = 'visible'
 
+      // A held panel stands still (pinned) until its hold ends, then drifts
+      // away and fades. Without a hold it travels the corridor as before.
+      const pinned = hold > NEAR
+      const travel = pinned && d > 0 ? Math.max(0, d - hold) : d
+
       // Signed translateZ: a panel ahead is pushed away, a panel the camera
       // has passed is pulled toward the viewer and grows past the screen.
       // Under reduced motion the panel does not move: the camera cuts.
-      const tz = scroll.stepped ? 0 : d * PX_PER_UNIT
-      el.style.transform = `translate3d(0, ${(d * PX_PER_UNIT) / 6}px, ${tz}px)`
+      const tz = scroll.stepped ? 0 : travel * PX_PER_UNIT
+      el.style.transform = `translate3d(0, ${(travel * PX_PER_UNIT) / 6}px, ${tz}px)`
 
-      const fade = sceneOpacity(d, span)
+      const fade = sceneOpacity(d, span, hold)
       // Reduced motion cuts between scenes, so nothing slides or blurs into
       // place: the panel is simply there or it is not.
       if (scroll.stepped) {

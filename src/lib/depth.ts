@@ -64,5 +64,12 @@ export const NEAR = 14
  */
 export const PASS_FADE = 24
 
+/**
+ * Distance past a scene's hold over which a held scene fades out. For the
+ * default hold (NEAR) this lands the fade end on PASS_FADE, matching the
+ * un-held scenes exactly.
+ */
+export const PASS_TAIL = PASS_FADE - NEAR
+
 /** Signed distance from the camera to a z inside a scene. */
 export const distanceIn = (sceneZ: number, offsetZ: number) => distanceTo(sceneZ + offsetZ)

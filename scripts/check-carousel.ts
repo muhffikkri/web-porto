@@ -7,25 +7,39 @@ import {
   focus,
   slot,
 } from '../src/lib/carousel.ts'
-import { NEAR } from '../src/lib/depth.ts'
+import { PASS_TAIL } from '../src/lib/depth.ts'
+import { PROJECTS } from '../src/data/projects.ts'
+import { PROJECT_HOLD, SCENES } from '../src/data/scenes.ts'
 
-const N = 3
+const N = PROJECTS.length
 const z0 = SCENE_Z
+
+// The scene holds for exactly the length of the arc, so every project gets a
+// centred moment and the headline stays lit until the last slide is read.
+assert.equal(PROJECT_HOLD, (N - 1) * SLICE, 'the hold does not match the arc')
+const projects = SCENES.find((s) => s.id === 'projects')
+assert.ok(projects, 'the projects scene is missing')
+assert.equal(projects.hold, PROJECT_HOLD, 'the projects scene does not hold for the arc')
 
 // The first project is the one the scene's resting position shows, so the
 // section opens on the card the reader is supposed to see first.
 assert.equal(focus(N, SCENE_Z), 0, 'first project is not centred at the scene')
 
-// The whole arc must fit inside the panel's readable band (NEAR each side of
-// the scene centre), or the last project centres while the panel is fading.
-assert.ok(
-  z0 - (N - 1) * SLICE >= SCENE_Z - NEAR,
-  'the last project centres past the readable band',
-)
-
 // The camera meets project 1 first, and project N last.
 assert.equal(focus(N, z0), 0, 'first project is not centred at the arc entry')
 assert.equal(focus(N, z0 - SLICE * (N - 1)), N - 1, 'last project centred at the end')
+
+// The panel is still fully lit when the last project centres, so the headline
+// never fades before the final slide.
+const lastCentre = z0 - (N - 1) * SLICE
+assert.ok(SCENE_Z - lastCentre <= PROJECT_HOLD, 'the last project centres past the readable hold')
+
+// And the whole carousel is fully faded before the next scene arrives.
+const experience = SCENES[SCENES.indexOf(projects) + 1]
+assert.ok(
+  SCENE_Z - PROJECT_HOLD - PASS_TAIL >= experience.z,
+  'the carousel is still fading when the next scene is centred',
+)
 
 // Clamped at both ends so the carousel holds rather than running off.
 assert.equal(focus(N, z0 + 500), 0, 'clamps before the entrance')
@@ -63,7 +77,16 @@ assert.equal(centred.blur, 0)
 assert.equal(centred.centred, true)
 assert.equal(centred.visible, true)
 
-// Neighbours are smaller, tilted toward the centre, dimmer and deeper.
+// Every project gets its own centred moment as the camera crosses the arc.
+for (let i = 0; i < N; i++) {
+  const s = slot(i, N, z0 - SLICE * i)
+  assert.equal(s.offset, 0, `project ${i} is not centred at its own z`)
+  assert.equal(s.opacity, 1, `project ${i} is dim when centred`)
+  assert.equal(s.centred, true, `project ${i} is not the centred card`)
+}
+
+// Immediate neighbours (one step either side of centre) are smaller, tilted
+// toward the centre, dimmer and deeper.
 for (const [i, sign] of [
   [0, -1],
   [2, 1],

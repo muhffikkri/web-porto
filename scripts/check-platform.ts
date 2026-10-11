@@ -14,6 +14,7 @@ import {
   roadVisible,
 } from '../src/lib/platform.ts'
 import { CAMERA_START, SCENES, WORLD_LENGTH } from '../src/data/scenes.ts'
+import { NEAR, PASS_TAIL } from '../src/lib/depth.ts'
 
 // --- placement: a fixed grid the pool slides over ---
 
@@ -107,6 +108,17 @@ for (let i = 0; i < SCENES.length - 1; i++) {
   const gap = SCENES[i].z - SCENES[i + 1].z
   assert.ok(gap >= (SCENES[i + 1].span ?? 20), `scenes ${i} and ${i + 1} overlap in view`)
   assert.ok(gap > 30, `scenes ${i} and ${i + 1} are only ${gap} apart`)
+}
+
+// A held scene plays out down the corridor, so it must be finished fading
+// before the next scene reaches its centre: the carousel and the section
+// after it never cross-fade.
+for (let i = 0; i < SCENES.length - 1; i++) {
+  const hold = SCENES[i].hold ?? NEAR
+  assert.ok(
+    SCENES[i].z - hold - PASS_TAIL >= SCENES[i + 1].z,
+    `scene ${SCENES[i].id} is still visible when ${SCENES[i + 1].id} is centred`,
+  )
 }
 
 assert.ok(BLOCK_WIDTH >= 14, 'the road would not reach the bottom corners when the camera drifts')
