@@ -487,6 +487,19 @@ main.depth-layer {
   color: var(--accent);
 }
 
+/* Project image styling */
+.project-image {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.project-screenshot {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 /* ---- experience milestones ---- */
 
 .milestone {

@@ -50,6 +50,11 @@ export function ProjectCard({ project, index, count }: Props) {
   return (
     <div ref={root} className="project-card" style={{ visibility: 'hidden' }}>
       <article className="project-entry" aria-label={project.title}>
+              {project.image && (
+          <div className="project-image">
+            <img src={`/project-screenshots/${project.image}`} alt={`${project.title} screenshot`} className="project-screenshot" />
+          </div>
+        )}
         <span className="project-index">{String(index + 1).padStart(2, '0')}</span>
         <h3 className="project-title">{project.title}</h3>
         <p className="project-desc">{project.description}</p>
