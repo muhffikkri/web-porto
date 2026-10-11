@@ -20,7 +20,7 @@ export const SCENES: SceneConfig[] = [
   { id: 'hero', title: 'MUHAMMAD FIKRI', label: 'INTRO', z: 0, span: 36 },
   { id: 'about', title: '01 / ABOUT', label: 'ABOUT', z: -36, span: 24 },
   { id: 'skills', title: '02 / SKILLS', label: 'SKILLS', z: -84, span: 26 },
-  { id: 'projects', title: '03 / PROJECTS', label: 'PROJECTS', z: -144, span: 31 },
+  { id: 'projects', title: '03 / PROJECTS', label: 'PROJECTS', z: -144, span: 40 },
   { id: 'experience', title: '04 / EXPERIENCE', label: 'EXPERIENCE', z: -216, span: 24 },
   // Contact is centred at the very end of the scroll, so it needs a wide span
   // to be readable on approach. Nothing follows it to compete with.
