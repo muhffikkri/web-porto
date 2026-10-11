@@ -22,14 +22,16 @@ export const PROJECTS: Project[] = [
     "title": "Ecg Wave Preprocess",
     "description": "Web workbench untuk memproses, memvisualisasikan, dan menguji sinyal Elektrokardiogram (EKG)",
     "tags": [],
-    "github": "https://github.com/muhffikkri/ecg-wave-preprocess"
+    "github": "https://github.com/muhffikkri/ecg-wave-preprocess",
+    "image": "ecg-wave-preprocess-tab1.png"
   },
   {
     "id": "Snake-Identification-web",
     "title": "Snake Identification Web",
     "description": "Sistem identifikasi dan monitoring gigitan ular yang terintegrasi ",
     "tags": [],
-    "github": "https://github.com/muhffikkri/Snake-Identification-web"
+    "github": "https://github.com/muhffikkri/Snake-Identification-web",
+    "image": "snakebiteai.png"
   },
   {
     "id": "room-reservation-system",

@@ -168,6 +168,9 @@ main.depth-layer {
   align-items: center;
   justify-content: center;
   gap: 1.4rem;
+  /* Lift the centred block above the midpoint: the composition otherwise
+     reads low and its lower content runs out of the viewport. */
+  padding-bottom: 8vh;
   pointer-events: none;
 }
 
@@ -258,12 +261,30 @@ main.depth-layer {
 
 .skill-star {
   white-space: nowrap;
+  /* Hover only. The constellation has no click target, so this is a read
+     affordance, not a control: no cursor change, no focus ring. */
+  pointer-events: auto;
+  transition: scale 260ms var(--ease);
+}
+
+/* Picked out on hover: the one label under the pointer lifts and takes the
+   accent, the rest stay quiet. */
+.skill-star:hover {
+  scale: 1.16;
+}
+
+.skill-star:hover .skill-label {
+  color: var(--accent);
+  text-shadow: 0 0 16px rgba(143, 93, 20, 0.28);
 }
 
 .skill-label {
   font-family: var(--font-mono);
   letter-spacing: 0.1em;
   color: var(--ink);
+  transition:
+    color 240ms var(--ease),
+    text-shadow 240ms var(--ease);
 }
 
 .panel--center {
@@ -404,13 +425,6 @@ main.depth-layer {
   color: var(--ink-2);
 }
 
-/* Stacked layout reads the constellation as a list, so the labels are
-     sized here rather than per-star from the constellation data. */
-.skill-star .skill-label {
-  font-size: 0.85rem !important;
-  letter-spacing: 0.12em;
-}
-
 /* ---- project carousel ---- */
 
 /* The heading is centred in the viewport like every other scene's text, and
@@ -421,12 +435,17 @@ main.depth-layer {
   z-index: 2;
   display: grid;
   place-items: center;
+  /* Matches .panel-center, so the heading rides at the same height as every
+     other scene's title. */
+  padding-bottom: 8vh;
   pointer-events: none;
 }
 
 .project-card {
   position: absolute;
-  top: 68%;
+  /* Anchored just below the heading rather than at two-thirds height, so the
+     whole card, links included, stays inside the viewport. */
+  top: calc(50% + 3rem);
   left: 50%;
   width: min(30vw, 26rem);
   margin-top: -1.5rem;
@@ -495,6 +514,9 @@ main.depth-layer {
 
 .project-screenshot {
   max-width: 100%;
+  /* Capped to a share of the viewport so a tall card can never push its own
+     links off the bottom edge. */
+  max-height: 20vh;
   height: auto;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -712,6 +734,13 @@ main.depth-layer {
   .skill-star {
     width: auto;
     margin: 0;
+  }
+
+  /* Stacked, the constellation reads as a list, so the labels take one size
+     rather than the per-star depth size the corridor gives them. */
+  .skill-star .skill-label {
+    font-size: 0.85rem !important;
+    letter-spacing: 0.12em;
   }
 
   /* Nested content takes the panel's width, not its own narrow default:

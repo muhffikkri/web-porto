@@ -1,4 +1,5 @@
 import { PROJECTS } from './projects.ts'
+import { MILESTONES, MILESTONE_GAP } from './experience.ts'
 
 export type SceneConfig = {
   id: string
@@ -31,6 +32,12 @@ export const PROJECT_SLICE = 10
 export const PROJECT_HOLD = (PROJECTS.length - 1) * PROJECT_SLICE
 
 /**
+ * World units past the experience centre its milestone sequence runs. The
+ * scene holds for exactly this long, so each milestone is read in place.
+ */
+export const EXPERIENCE_HOLD = (MILESTONES.length - 1) * MILESTONE_GAP
+
+/**
  * Scene centres. Spacing is deliberately wider than the corridor's legible
  * span so only one scene is ever reading, and every z is a multiple of the
  * road's BLOCK_STEP so a section always stands on a block.
@@ -43,7 +50,14 @@ export const SCENES: SceneConfig[] = [
   { id: 'about', title: '01 / ABOUT', label: 'ABOUT', z: -36, span: 24 },
   { id: 'skills', title: '02 / SKILLS', label: 'SKILLS', z: -84, span: 26 },
   { id: 'projects', title: '03 / PROJECTS', label: 'PROJECTS', z: -144, span: 40, hold: PROJECT_HOLD },
-  { id: 'experience', title: '04 / EXPERIENCE', label: 'EXPERIENCE', z: -252, span: 24 },
+  {
+    id: 'experience',
+    title: '04 / EXPERIENCE',
+    label: 'EXPERIENCE',
+    z: -252,
+    span: 24,
+    hold: EXPERIENCE_HOLD,
+  },
   // Contact is centred at the very end of the scroll, so it needs a wide span
   // to be readable on approach. Nothing follows it to compete with.
   { id: 'contact', title: '05 / CONTACT', label: 'CONTACT', z: -348, span: 84 },

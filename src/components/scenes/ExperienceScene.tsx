@@ -70,7 +70,7 @@ function Milestone({
     <li
       ref={ref}
       className="milestone"
-      style={{ left: `${50 + m.x}%`, top: `${50 + m.y}%`, visibility: 'hidden' }}
+      style={{ left: `${50 + m.x}%`, top: `${46 + m.y}%`, visibility: 'hidden' }}
       data-scene={`milestone-${index}`}
     >
       <span className="milestone-period">{m.period}</span>

@@ -1,4 +1,5 @@
 import { SCENES } from '../data/scenes.ts'
+import { MILESTONE_GAP } from '../data/experience.ts'
 
 /**
  * Milestone placement, as pure functions of the camera z.
@@ -12,15 +13,15 @@ import { SCENES } from '../data/scenes.ts'
 export const SCENE_Z = SCENES[4].z
 
 /** World units between milestones. */
-export const GAP = 14
+export const GAP = MILESTONE_GAP
 
 /**
- * World z of a milestone by its index. The sequence is centred on the scene
- * and the camera meets the earliest milestone first, so earlier milestones
- * sit at larger z.
+ * World z of a milestone by its index. The first milestone sits on the scene,
+ * so the section's resting position (nav, hash link, reduced motion) shows it,
+ * and later milestones extend deeper. The scene holds for the whole sequence.
  */
-export function milestoneZ(index: number, count: number) {
-  return SCENE_Z + ((count - 1) / 2 - index) * GAP
+export function milestoneZ(index: number, _count: number) {
+  return SCENE_Z - index * GAP
 }
 
 export type Marker = {

@@ -63,12 +63,14 @@ export function FloatPanel({ sceneZ, offsetZ = 0, side, x, y = 0, children, clas
     return () => cancelAnimationFrame(raf)
   }, [sceneZ, offsetZ])
 
+  // Panels hang from a touch above the true centre: the composition reads
+  // low on a full-height viewport, and the bottom margin is what runs out.
   const place: CSSProperties =
     side === 'left'
-      ? { left: 'clamp(1.5rem, 5vw, 5rem)', top: `${50 + y}%` }
+      ? { left: 'clamp(1.5rem, 5vw, 5rem)', top: `${46 + y}%` }
       : side === 'right'
-        ? { right: 'clamp(1.5rem, 5vw, 5rem)', top: `${50 + y}%` }
-        : { left: `${50 + (x ?? 0)}%`, top: `${50 + y}%` }
+        ? { right: 'clamp(1.5rem, 5vw, 5rem)', top: `${46 + y}%` }
+        : { left: `${50 + (x ?? 0)}%`, top: `${46 + y}%` }
 
   return (
     <div

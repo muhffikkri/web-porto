@@ -1,17 +1,28 @@
 import assert from 'node:assert/strict'
 import { GAP, SCENE_Z, marker, markerFocus, milestoneZ } from '../src/lib/milestones.ts'
+import { EXPERIENCE_HOLD, SCENES } from '../src/data/scenes.ts'
+import { MILESTONES } from '../src/data/experience.ts'
 import { brighten, fogFar, BRIGHTEN_END, BRIGHTEN_START } from '../src/lib/atmosphere.ts'
 
-const N = 3
+const N = MILESTONES.length
 const first = milestoneZ(0, N)
 const last = milestoneZ(N - 1, N)
 
-// The sequence is centred on its scene, like the carousel.
-assert.equal(first + last, SCENE_Z * 2, 'milestones are not symmetric about the scene')
-assert.ok(first > SCENE_Z, 'the first milestone should be nearer than the scene')
-assert.ok(last < SCENE_Z, 'the last milestone should be deeper than the scene')
+// The first milestone sits on the scene, so the section's resting position
+// shows it, and the rest extend deeper down the corridor.
+assert.equal(first, SCENE_Z, 'the first milestone should sit on the scene')
+assert.ok(last < SCENE_Z, 'later milestones should sit deeper than the scene')
 assert.equal(milestoneZ(0, N) - milestoneZ(1, N), GAP, 'milestones are not evenly spaced')
 assert.equal(milestoneZ(0, 1), SCENE_Z, 'a lone milestone should sit on the scene')
+
+// The scene holds for the whole sequence, so the last milestone is read
+// before the panel begins to fade: that is what buys the scene its time.
+assert.equal(EXPERIENCE_HOLD, (N - 1) * GAP, 'the hold does not match the sequence')
+assert.equal(
+  SCENES.find((s) => s.id === 'experience')?.hold,
+  EXPERIENCE_HOLD,
+  'the experience scene does not hold for the sequence',
+)
 
 // The camera reads them in order, one at a time.
 assert.equal(markerFocus(N, first), 0, 'first milestone not active on entry')

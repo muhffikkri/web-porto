@@ -11,6 +11,13 @@ export type Milestone = {
 }
 
 /**
+ * World units between milestones. The experience scene holds for the whole
+ * sequence so each milestone gets read on its own, and a wider gap is what
+ * buys that scene its screen time.
+ */
+export const MILESTONE_GAP = 20
+
+/**
  * Spatial milestones. Each sits at its own z inside the Experience scene, so
  * the camera passes them one at a time down the corridor.
  */
@@ -22,7 +29,7 @@ export const MILESTONES: Milestone[] = [
     org: 'Clinical signal research',
     detail: 'Seizure detection from EEG with 1D-CNN architectures.',
     x: -28,
-    y: 12,
+    y: 8,
   },
   {
     id: 'm2',
@@ -31,7 +38,7 @@ export const MILESTONES: Milestone[] = [
     org: 'Spatiotemporal forecasting lab',
     detail: 'ConvLSTM models for spatial and temporal prediction.',
     x: 26,
-    y: -14,
+    y: -12,
   },
   {
     id: 'm3',
@@ -40,6 +47,6 @@ export const MILESTONES: Milestone[] = [
     org: 'Data platform team',
     detail: 'Training pipelines, evaluation harnesses, deployment.',
     x: -22,
-    y: 28,
+    y: 20,
   },
 ]
