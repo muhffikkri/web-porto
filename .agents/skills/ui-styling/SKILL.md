@@ -236,6 +236,7 @@ python scripts/tailwind_config_gen.py --colors brand:blue --fonts display:Inter
 8. **TypeScript**: Use full type safety for better DX
 9. **Visual Hierarchy**: Let composition guide attention, use spacing and color intentionally
 10. **Expert Craftsmanship**: Every detail matters - treat UI as a craft
+11. **UI Implementation Details**: Avoid duplicate conditional rendering in components; adjust carousel SLICE for adequate item viewing time; tune section spans for cross-device readability.
 
 ## Reference Navigation
 
